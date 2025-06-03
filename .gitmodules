@@ -1,0 +1,6 @@
+[submodule "qemu"]
+	path = qemu
+	url = git@github.com:qemu/qemu.git
+[submodule "hotstuff"]
+	path = hotstuff
+	url = git@github.com:asonnino/hotstuff.git
