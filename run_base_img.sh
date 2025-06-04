@@ -6,6 +6,8 @@
   -net nic -net user,hostfwd=tcp::2222-:22 \
   -qmp tcp:localhost:4444,server,wait=off \
   -display none \
+  # -boot d \
+  # -cdrom *.iso \
 
 echo "Press Ctrl+C to stop."
 
