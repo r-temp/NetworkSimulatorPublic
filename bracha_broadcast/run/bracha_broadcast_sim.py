@@ -9,15 +9,18 @@ NUMBER_VM = 3
 USERNAME = "root"
 PASSWD = "1234"
 
+number_msg_to_broadcast = 50
+
+#########################
+
 addresses_ssh = [("127.0.0.1", port) for port in range(2222, 2222 + NUMBER_VM)]
 
 # To generate config file
 port_number = 42512 # hardcoded into main.rs
 addresses = [(f"192.168.15.{i}", port_number) for i in range(0, NUMBER_VM)]
 
-number_msg_to_broadcast = 50
 
-#########################
+
 
 files_path = [
     "./bracha_broadcast/node/target/release/bracha_broadcast",

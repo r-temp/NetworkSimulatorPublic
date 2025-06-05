@@ -6,7 +6,7 @@ Don't forget to clone the submodules \
 
 ## QEMU
 
-Using v10.0.2
+Currently using v10.0.2 
 
 ```
 cd qemu
@@ -35,7 +35,7 @@ make -j8
 
 ## Base image
 
-The system assume the existence of a qcow2 image into which it can ssh on `root` with password `1234`. (It can be easily modified in `/network_simulator/start.py`)
+The system assume the existence of a qcow2 image into which it can ssh on `root` with password `1234`. (This can be easily modified in `/network_simulator/start.py`)
 
 ### Creating the image
 First create an empty qcow2 image \
@@ -115,9 +115,9 @@ You can then ssh into them using ports `2222, 2223, ...` \
 
 
 ## Bracha broadcast
-TODO what does this implementation does (each node send and receive msg)
 
-<https://www.sciencedirect.com/science/article/pii/089054018790054X>
+See <https://www.sciencedirect.com/science/article/pii/089054018790054X> for the algorithm. \
+Each node broadcast a given number of message to the others. A node wait for its current message to be delivered before sending the next one.
 
 ### Compile Bracha broadast
 
@@ -126,35 +126,54 @@ Install rust
 `cargo build --jobs 8 --release` \
 
 ### Run Bracha broadcast on AWS
-TODO
+Open `./bracha_broadcast/run/bracha_broadcast_cloud.py` and configure the ip addresses and username to ssh into the VM's (Login is assumed to be done using ssh keys) and the number of message to send per node.
+Then run \
 `python3 bracha_broadcast/run/bracha_broadcast_cloud.py` \
 
 ### Run Bracha broadcast on the simulator
-TODO 
 Install hping and bc on the base image
-` ` \
-
+Open `./bracha_broadcast/run/bracha_broadcast_sim.py` and configure the number of VMs and the number of message to send per node.
+Then run \
+`python3 bracha_broadcast/run/bracha_broadcast_sim.py` \
 
 
 ## Hotstuff
-TODO
-
-### Apply modif to hostuff
-TODO what to copy where
-
-### Compile hotstuff
-TODO install required dep and build
-
-### Prepare base image to run hotstuff
-TODO
 
 ### Run hotstuff on AWS
-TODO
+See <https://github.com/asonnino/hotstuff/wiki/AWS-Benchmarks>
+
+
+### Apply modif to hostuff to launch on the sim
+`cp ./hotstuff_modif/fabfile.py ./hotstuff/benchmark/` \
+`cp ./hotstuff_modif/sleep_tmux_kill.sh ./hotstuff/benchmark/` \
+`cp ./hotstuff_modif/remote_sim.py ./hotstuff/benchmark/benchmark/` \
+
+### Compile hotstuff
+Install required dep (clang and rust) 
+`curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh` \
+and build using \
+`cd hotstuff/node`
+`cargo build --release --features benchmark`
+
+### Prepare base image to run hotstuff
+Install tmux and rust on the base image \
+`curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh` \
+Once compiled, copy the hotstuff folder from your machine to the base image \
+`sftp -P 2222 root@127.0.0.1` \
+`put -r ./hotstuff /root/hotstuff` \
+Share public Ed25519 key using `ssh-copy-id -p 2222 root@localhost` 
 
 ### Run hotstuff on the simulator
-TODO
+Configure the benchmark parameters in `hotstuff/benchmark/fabfile.py` and the number of VMs in `hotstuff/benchmark/\benchmark/remote_sim.py` \
+Set the path to your ssh key in `hotstuff/benchmark/settings.py` \
+Then run \
+`cd ./hotstuff/benchmark` \
+`fab remote-sim` \
+Note : I managed to have hotstuff work using python 3.9 and running `pip install --upgrade numpy matplotlib`
 
-
+### Plot results
+`fab plot` \
+But for some reason you might need to go in `./hotstuff/benchmark/results/*.txt` and remove some `-` before some numbers for it to work. \
 
 ## Test timeslices accuracy 
 TODO run base image, compile and upload print_time_program, compile and start scheduler, measure accuracy
