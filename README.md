@@ -117,16 +117,22 @@ You can then ssh into them using ports `2222, 2223, ...` \
 ## Bracha broadcast
 TODO what does this implementation does (each node send and receive msg)
 
+<https://www.sciencedirect.com/science/article/pii/089054018790054X>
+
 ### Compile Bracha broadast
-TODO
-install rust
-cargo build
+
+Install rust
+`cd bracha_broadcast/node` \ 
+`cargo build --jobs 8 --release` \
 
 ### Run Bracha broadcast on AWS
 TODO
+`python3 bracha_broadcast/run/bracha_broadcast_cloud.py` \
 
 ### Run Bracha broadcast on the simulator
 TODO 
+Install hping and bc on the base image
+` ` \
 
 
 

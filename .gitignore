@@ -2,3 +2,5 @@ tmp_files/
 *.iso
 *.qcow2
 qemu/build/
+tmp_files_cloud/
+bracha_broadcast/results/
