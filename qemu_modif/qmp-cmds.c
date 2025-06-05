@@ -34,71 +34,46 @@
 #include "migration/misc.h"
 
 
+
 /// BEGIN Network simulator modif ///
 
 struct TimerCallbackParams {
     Error **errp;
-    int64_t duration_ms;
-    int64_t time_before_cont;
-    int64_t time_after_cont;
-    int64_t time_after_cont_event;
-    int64_t time_after_stop_scheduled;
-    int64_t time_before_stop_scheduled;
 };
 
-static void stop_vm_bh(void *opaque) {
+static void stop_vm_bh(void *opaque)
+{
     struct TimerCallbackParams* params = (struct TimerCallbackParams*)opaque;
-    // int64_t time_before_stop = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
     qmp_stop(params->errp);
-    // int64_t time_after_stop = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
-
-    // TODO remove unsused variables, warning are treated as errors
-    // int64_t diff_vm_cont_us = (params->time_after_cont - params->time_before_cont) / 1e3;
-    // int64_t diff_timer_us = (params->time_before_stop_scheduled - params->time_after_cont) / 1e3;
-    // int64_t diff_bh_schedule_us = (params->time_after_stop_scheduled - params->time_before_stop_scheduled) / 1e3;
-    // int64_t diff_bh_schedule_execute_us = (time_before_stop - params->time_after_stop_scheduled) / 1e3;
-    // int64_t diff_vm_stop_us = (time_after_stop - time_before_stop) / 1e3;
-
-    // int64_t diff_max = (time_after_stop - params->time_before_cont) / 1e3;
-    // int64_t diff_min = (time_before_stop - params->time_after_cont) / 1e3;
 
     free(params);
 }
 
-static void my_timer_callback(void *opaque) {
+static void my_timer_callback(void *opaque)
+{
     struct TimerCallbackParams* params = (struct TimerCallbackParams*)opaque;
-    int64_t time_before_stop_scheduled = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
-    params->time_before_stop_scheduled = time_before_stop_scheduled;
     qemu_bh_schedule(qemu_bh_new(stop_vm_bh, (void*)params));
-    int64_t time_after_stop_scheduled = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
-    params->time_after_stop_scheduled = time_after_stop_scheduled;
 }
     
 
 void qmp_run_time_slice(int64_t duration_ms, Error **errp)
 {
-
     struct TimerCallbackParams* params = malloc(sizeof(struct TimerCallbackParams));
     params->errp = errp;
-    params->duration_ms = duration_ms;
 
-    
-    int64_t time_before_cont = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
-    params->time_before_cont = time_before_cont;
     qmp_cont(errp);
     int64_t time_after_cont = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
-    params->time_after_cont = time_after_cont;
 
     QEMUTimer *timer;
 
     timer = timer_new_ns(QEMU_CLOCK_VIRTUAL, my_timer_callback, (void*)params);
-    
+
     if (!timer) {
         fprintf(stderr, "Failed to create timer\n");
         return;
     }
 
-    int64_t expire_time = time_after_cont + params->duration_ms*1e6;
+    int64_t expire_time = time_after_cont + duration_ms*1e6;
     timer_mod_ns(timer, expire_time);
 }
 
@@ -111,6 +86,9 @@ TimeInfo * qmp_get_virtual_clock_ns(Error **errp)
 }
 
 /// END Network simulator modif ///
+
+
+
 
 NameInfo *qmp_query_name(Error **errp)
 {

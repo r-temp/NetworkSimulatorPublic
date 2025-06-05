@@ -6,6 +6,13 @@ Don't forget to clone the submodules \
 
 ## QEMU
 
+Using v10.0.2
+
+```
+cd qemu
+git checkout v10.0.2
+```
+
 ### Apply modif to qemu
 The simulator need 2 custom QMP commands to easily be able to run VMs time slices. \
 To add them to QEMU copy the following files (and replace the existing ones) from `qemu_modif` to `qemu` \
@@ -22,13 +29,13 @@ Installing some dependencies may be needed
 cd qemu
 mkdir build
 cd build
-../configure --target-list=x86_64-softmmu --enable-debug
+../configure --target-list=x86_64-softmmu
 make -j8
 ```
 
 ## Base image
 
-The system assume the existence of a base.qcow2 image into which it can ssh with password `1234`.
+The system assume the existence of a qcow2 image into which it can ssh on `root` with password `1234`. (It can be easily modified in `/network_simulator/start.py`)
 
 ### Creating the image
 First create an empty qcow2 image \
@@ -37,10 +44,12 @@ Download a linux image and start the VM using `./run_base_img.sh` **uncomment th
 Once the installation is done comment the 2 lines out again. \
 You can use `./run_base_img.sh` later to launch the base image without the simulator and configure it (install dependencies) \
 You can set GRUB timeout to 0 to skip the menu and boot the VM faster. \
-Ensure the network interface is up with address `10.0.2.15` and default gateway `10.0.2.2` \
+**Make sure there is no time sync daemons running** \
+Ensure the network interface is up with address `10.0.2.15` and default gateway `10.0.2.2` and set the DNS server to `10.0.2.3` \
 **Do not use `ping` to test QEMU user networking connectivity, it won't work, use curl (or other) instead** \
-From QEMU documentation :
-> If you are using the (default) SLiRP user networking, then ping (ICMP) will not work, though TCP and UDP will. Don't try to use ping to test your QEMU network configuration!
+(ping will work between VMs using the TAP interface though)
+
+When using `ping` to test connectivity between VM using QEMU with `-smp` more than 1 (as set in `/network_simulator/start.py`) you may see `ping: Warning: time of day goes back (-514824us), taking countermeasures`, maybe because the clock is not syncronized between the vCPUs. (<https://serverfault.com/questions/1078179/ping-warning-time-of-day-goes-back-203647us-taking-countermeasures>)
 
 For more info on QEMU networking check <https://wiki.qemu.org/Documentation/Networking> \
 \
@@ -86,19 +95,23 @@ This is the program that connect to the VMs using QMP and TAP interfaces.
 
 ### Compile the simulator
 `cd ./network_simulator/src` \
-`make` \
+`make -j8` \
 
 ### Start the simulator
-To start the simulator run `start.py` which will setup the TAP interfaces (need sudo for this), start the VMs and the simulator. \
+To start the simulator run `/network_simulator/start.py` which will setup the TAP interfaces (need sudo for this), start the VMs and the simulator. \
 You need to install `paramiko` \
-`start.py` assumes that it is run from the root and that the network interface inside the VM connected to the TAP interface is name `ens4` \
+`/network_simulator/start.py` assumes that it is run from the root and that the network interface inside the VM connected to the TAP interface is named `ens4` (this can be easily changed) \
 `sudo python3 ./start.py <number of VMs to create> <path to the base image> <folder where to create all temporary files like the instanciated VMs images> <path to latency configuration file>` \
-The latency configuration file is just a .txt with a matrix of one way latencies (in ms) between VMs separated by spaces, each row/column is a VM. \
+The latency configuration file is just a .txt with a matrix of one way latencies (in ms) between VMs separated by spaces, latency [i][j] is the one way latency when sending to VM i from VM j. \
 Example \
 `sudo python3 ./network_simulator/start.py 3 ./base.qcow2 ./tmp_files ./latency_configs/delays_3x3.txt` \
 Wait for `READY!` to appear, this means that all VMs started. \
+At the start the simulator run all the VMs at the same time for 10sec to speed up booting before using the scheduling algorithm (also it seems to avoid staying stuck in GRUB somehow) \
 You can then ssh into them using ports `2222, 2223, ...` \
 `ssh -p 2222 root@127.0.0.1` \
+
+### Stop the simulator
+`Ctrl + C` \
 
 
 ## Bracha broadcast

@@ -2,9 +2,11 @@
 #include <vector>
 #include <string>
 
-std::unordered_map<int, std::string> qmp_socket_buffers; // <fd, data>
+std::unordered_map<int, std::string> qmp_socket_to_buffers; // <fd, data>
 
 // copied from tun2.c
+// http://rrendec.mindbit.ro/post/tun-tap-tunnels/
+// https://github.com/rrendec/tun2
 int tun_alloc(const char *dev)
 {
 	struct ifreq ifr;
@@ -27,7 +29,6 @@ int tun_alloc(const char *dev)
 		return -1;
 	}
 
-	// strcpy(dev, ifr.ifr_name);
 	return fd;
 }
 
@@ -60,35 +61,28 @@ void clear_socket_buffer(int socket){
     while(status > 0){
         read(socket, recv_buff, sizeof(BUFF_SIZE));
         status = poll(pfd, 1, 500);
-        // printf("status %d %s \n", status, recv_buff);
     }
 }
 std::string read_line(int socket){
+
     const int BUFF_SIZE = 1024;
     char recv_buff[BUFF_SIZE]; 
     bzero(recv_buff, BUFF_SIZE); 
-    
 
-    // if line in cache return it and remove it from cache
-    // else read until there is a line in cache then remove it from cache and return it
-    //
-    // TODO debug this mess
-    while(qmp_socket_buffers[socket].find("\n") == std::string::npos){
+    // as long as there is no line is found in the buffer, read the socket and append the read to the buffer
+    while(qmp_socket_to_buffers[socket].find("\n") == std::string::npos){
             bzero(recv_buff, BUFF_SIZE);
             read(socket, recv_buff, sizeof(BUFF_SIZE));
-            // cout << "recv_buff " << recv_buff << endl;
-            qmp_socket_buffers[socket].append(recv_buff);
-            // cout << "updated qmp_socket_buffers[socket] " << qmp_socket_buffers[socket] << endl;
+            qmp_socket_to_buffers[socket].append(recv_buff);
     }
-    int res = qmp_socket_buffers[socket].find("\n");
+
+    // get the first line from the buffer to return it
+    int res = qmp_socket_to_buffers[socket].find("\n");
     
-    // cout << "res " << res << endl;
+    std::string response = qmp_socket_to_buffers[socket].substr(0, res);
 
-    std::string response = qmp_socket_buffers[socket].substr(0, res); // TODO check index is correct
-
-    // cout << "response " << response << endl;
-
-    qmp_socket_buffers[socket].erase(0,res+1);
+    // remove the line from the buffer
+    qmp_socket_to_buffers[socket].erase(0,res+1);
 
     return response;
 }
