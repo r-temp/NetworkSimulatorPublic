@@ -1,10 +1,11 @@
 import os
+import time
 import paramiko
 import threading
 
 #### TODO configure ###
 
-NUMBER_VM = 3
+NUMBER_VM = 9
 
 USERNAME = "root"
 PASSWD = "1234"
@@ -114,11 +115,16 @@ for i, ssh_con in enumerate(ssh_connections):
 print("Started all launch scripts")
 print("___________________________________")
 
+start_time = time.time()
+
 for stdout in stdout_channels:
     for line in stdout.readlines():
         if 'time' in line or "Delivered" in line:
             print(line)
     print("___________________________________")
+
+end_time = time.time()
+print("Total time is ", end_time-start_time)
 
 print("\n\n\nstderr for debug")
 for stderr in stderr_channels:

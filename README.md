@@ -128,13 +128,13 @@ Install rust
 ### Run Bracha broadcast on AWS
 Open `./bracha_broadcast/run/bracha_broadcast_cloud.py` and configure the ip addresses and username to ssh into the VM's (Login is assumed to be done using ssh keys) and the number of message to send per node.
 Then run \
-`python3 bracha_broadcast/run/bracha_broadcast_cloud.py` \
+`python3 bracha_broadcast/run/bracha_broadcast_cloud.py`
 
 ### Run Bracha broadcast on the simulator
 Install hping and bc on the base image
 Open `./bracha_broadcast/run/bracha_broadcast_sim.py` and configure the number of VMs and the number of message to send per node.
 Then run \
-`python3 bracha_broadcast/run/bracha_broadcast_sim.py` \
+`python3 bracha_broadcast/run/bracha_broadcast_sim.py`
 
 
 ## Hotstuff

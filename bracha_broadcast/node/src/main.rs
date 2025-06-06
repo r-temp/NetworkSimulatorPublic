@@ -242,8 +242,8 @@ fn main() -> std::io::Result<()> {
                                             {
                                                 msgs_delivered.insert(value);
 
-                                                // print last msg to check arrival order
-                                                if value as f32 > (number_of_msg_per_process * process_number) as f32 * 0.9 {
+                                                // print last 50 msg to check arrival order
+                                                if value > ((number_of_msg_per_process * process_number) - 50) as i32 {
                                                     println!("Delivered msg {value}")
                                                 }   
 

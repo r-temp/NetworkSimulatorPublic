@@ -1,4 +1,5 @@
 import os
+import time
 import paramiko
 import threading
 
@@ -8,13 +9,13 @@ username = "ubuntu"
 addresses_ssh = [
     ("3.121.86.202", 22),
     ("35.159.161.160", 22),
-    ("3.99.129.225", 22),
-    # ("99.79.78.106", 22),
-    # ("15.223.208.211", 22),
-    # ("35.182.77.235", 22),
-    # ("3.106.139.72", 22),
-    # ("54.252.241.236", 22),
-    # ("3.27.222.165", 22),
+    ("35.159.110.172", 22),
+    ("16.52.52.68", 22),
+    ("16.52.59.70", 22),
+    ("35.182.237.108", 22),
+    ("16.176.16.92", 22),
+    ("3.107.56.145", 22),
+    ("54.252.234.120", 22),
 ]
 
 # To generate config file
@@ -22,13 +23,13 @@ port_number = 42512 # hardcoded into main.rs
 addresses = [
     ("3.121.86.202", port_number),
     ("35.159.161.160", port_number),
-    ("3.99.129.225", port_number),
-    # ("99.79.78.106", port_number),
-    # ("15.223.208.211", port_number),
-    # ("35.182.77.235", port_number),
-    # ("3.106.139.72", port_number),
-    # ("54.252.241.236", port_number),
-    # ("3.27.222.165", port_number),
+    ("35.159.110.172", port_number),
+    ("16.52.52.68", port_number),
+    ("16.52.59.70", port_number),
+    ("35.182.237.108", port_number),
+    ("16.176.16.92", port_number),
+    ("3.107.56.145", port_number),
+    ("54.252.234.120", port_number),
 ]
 
 number_msg_to_broadcast = 50
@@ -129,11 +130,16 @@ for i, ssh_con in enumerate(ssh_connections):
 print("Started all launch scripts")
 print("___________________________________")
 
+start_time = time.time()
+
 for stdout in stdout_channels:
     for line in stdout.readlines():
         if 'time' in line or "Delivered" in line:
             print(line)
     print("___________________________________")
+
+end_time = time.time()
+print("Total time is ", end_time-start_time)
 
 print("\n\n\nstderr for debug")
 for stderr in stderr_channels:
